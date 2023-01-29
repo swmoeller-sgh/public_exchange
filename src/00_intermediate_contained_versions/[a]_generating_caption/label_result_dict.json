@@ -1,0 +1,502 @@
+{
+    "FasterRCNN_MobileNet_V3_Large": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "car": 2,
+            "potted plant": 1
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "car": 1
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "car": 1
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.95
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.99
+        }
+    },
+    "FasterRCNN_MobileNet_V3_Large_320": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.7
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.8
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.9
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.95
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "FasterRCNN_MobileNet_V3_Large_320_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.99
+        }
+    },
+    "Fasterrcnn_resnet50": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "car": 3,
+            "potted plant": 8,
+            "traffic light": 1
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "car": 3,
+            "potted plant": 3,
+            "traffic light": 1
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "car": 3,
+            "potted plant": 1,
+            "traffic light": 1
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "car": 3
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.99
+        }
+    },
+    "Fasterrcnn_resnet50_fpn_v2": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "car": 3,
+            "potted plant": 15
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "car": 3,
+            "potted plant": 12
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "car": 3,
+            "potted plant": 7
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "car": 2,
+            "potted plant": 1
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "FasterRCNN_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.99
+        }
+    },
+    "RetinaNet_ResNet50": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "RetinaNet_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "bench": 7,
+            "bowl": 1,
+            "car": 55,
+            "chair": 2,
+            "clock": 1,
+            "fire hydrant": 5,
+            "person": 58,
+            "potted plant": 63,
+            "stop sign": 3,
+            "traffic light": 44,
+            "truck": 3,
+            "vase": 2
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "RetinaNet_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "bench": 7,
+            "bowl": 1,
+            "car": 55,
+            "chair": 2,
+            "clock": 1,
+            "fire hydrant": 5,
+            "person": 58,
+            "potted plant": 63,
+            "stop sign": 3,
+            "traffic light": 44,
+            "truck": 3,
+            "vase": 2
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "RetinaNet_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "bench": 7,
+            "bowl": 1,
+            "car": 55,
+            "chair": 2,
+            "clock": 1,
+            "fire hydrant": 5,
+            "person": 58,
+            "potted plant": 63,
+            "stop sign": 3,
+            "traffic light": 44,
+            "truck": 3,
+            "vase": 2
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "RetinaNet_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "bench": 7,
+            "bowl": 1,
+            "car": 55,
+            "chair": 2,
+            "clock": 1,
+            "fire hydrant": 5,
+            "person": 58,
+            "potted plant": 63,
+            "stop sign": 3,
+            "traffic light": 44,
+            "truck": 3,
+            "vase": 2
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "RetinaNet_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.99,
+            "bench": 7,
+            "bowl": 1,
+            "car": 55,
+            "chair": 2,
+            "clock": 1,
+            "fire hydrant": 5,
+            "person": 58,
+            "potted plant": 63,
+            "stop sign": 3,
+            "traffic light": 44,
+            "truck": 3,
+            "vase": 2
+        }
+    },
+    "RetinaNet_ResNet50_V2": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "bench": 17,
+            "bicycle": 2,
+            "boat": 1,
+            "bowl": 1,
+            "car": 13,
+            "chair": 11,
+            "clock": 1,
+            "person": 23,
+            "potted plant": 121,
+            "traffic light": 2,
+            "truck": 2,
+            "tv": 1,
+            "umbrella": 9,
+            "vase": 4
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "bench": 17,
+            "bicycle": 2,
+            "boat": 1,
+            "bowl": 1,
+            "car": 13,
+            "chair": 11,
+            "clock": 1,
+            "person": 23,
+            "potted plant": 121,
+            "traffic light": 2,
+            "truck": 2,
+            "tv": 1,
+            "umbrella": 9,
+            "vase": 4
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "bench": 17,
+            "bicycle": 2,
+            "boat": 1,
+            "bowl": 1,
+            "car": 13,
+            "chair": 11,
+            "clock": 1,
+            "person": 23,
+            "potted plant": 121,
+            "traffic light": 2,
+            "truck": 2,
+            "tv": 1,
+            "umbrella": 9,
+            "vase": 4
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "bench": 17,
+            "bicycle": 2,
+            "boat": 1,
+            "bowl": 1,
+            "car": 13,
+            "chair": 11,
+            "clock": 1,
+            "person": 23,
+            "potted plant": 121,
+            "traffic light": 2,
+            "truck": 2,
+            "tv": 1,
+            "umbrella": 9,
+            "vase": 4
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "RetinaNet_ResNet50_FPN_V2_Weights.COCO_V1",
+            "[2] confidence level": 0.99,
+            "bench": 17,
+            "bicycle": 2,
+            "boat": 1,
+            "bowl": 1,
+            "car": 13,
+            "chair": 11,
+            "clock": 1,
+            "person": 23,
+            "potted plant": 121,
+            "traffic light": 2,
+            "truck": 2,
+            "tv": 1,
+            "umbrella": 9,
+            "vase": 4
+        }
+    },
+    "SSD300_VGG16": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "SSD300_VGG16_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "bench": 1,
+            "car": 7,
+            "person": 44,
+            "potted plant": 15,
+            "traffic light": 133
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "SSD300_VGG16_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "bench": 1,
+            "car": 7,
+            "person": 44,
+            "potted plant": 15,
+            "traffic light": 133
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "SSD300_VGG16_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "bench": 1,
+            "car": 7,
+            "person": 44,
+            "potted plant": 15,
+            "traffic light": 133
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "SSD300_VGG16_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "bench": 1,
+            "car": 7,
+            "person": 44,
+            "potted plant": 15,
+            "traffic light": 133
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "SSD300_VGG16_Weights.COCO_V1",
+            "[2] confidence level": 0.99,
+            "bench": 1,
+            "car": 7,
+            "person": 44,
+            "potted plant": 15,
+            "traffic light": 133
+        }
+    },
+    "SSDLite320_MobileNet_V3_Large": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "SSDLite320_MobileNet_V3_Large_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "car": 21,
+            "clock": 50,
+            "person": 2,
+            "potted plant": 3,
+            "traffic light": 224
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "SSDLite320_MobileNet_V3_Large_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "car": 21,
+            "clock": 50,
+            "person": 2,
+            "potted plant": 3,
+            "traffic light": 224
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "SSDLite320_MobileNet_V3_Large_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "car": 21,
+            "clock": 50,
+            "person": 2,
+            "potted plant": 3,
+            "traffic light": 224
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "SSDLite320_MobileNet_V3_Large_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "car": 21,
+            "clock": 50,
+            "person": 2,
+            "potted plant": 3,
+            "traffic light": 224
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "SSDLite320_MobileNet_V3_Large_Weights.COCO_V1",
+            "[2] confidence level": 0.99,
+            "car": 21,
+            "clock": 50,
+            "person": 2,
+            "potted plant": 3,
+            "traffic light": 224
+        }
+    },
+    "fcos_resnet50_fpn": {
+        "0.7": {
+            "[0] time run": "2023-01-29 21:16:43.042138",
+            "[1] weight": "FCOS_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.7,
+            "bench": 11,
+            "car": 11,
+            "fire hydrant": 3,
+            "motorcycle": 1,
+            "parking meter": 1,
+            "person": 6,
+            "potted plant": 56,
+            "stop sign": 1,
+            "traffic light": 4,
+            "truck": 4,
+            "umbrella": 2
+        },
+        "0.8": {
+            "[0] time run": "2023-01-29 21:17:21.098092",
+            "[1] weight": "FCOS_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.8,
+            "bench": 11,
+            "car": 11,
+            "fire hydrant": 3,
+            "motorcycle": 1,
+            "parking meter": 1,
+            "person": 6,
+            "potted plant": 56,
+            "stop sign": 1,
+            "traffic light": 4,
+            "truck": 4,
+            "umbrella": 2
+        },
+        "0.9": {
+            "[0] time run": "2023-01-29 21:17:49.504615",
+            "[1] weight": "FCOS_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.9,
+            "bench": 11,
+            "car": 11,
+            "fire hydrant": 3,
+            "motorcycle": 1,
+            "parking meter": 1,
+            "person": 6,
+            "potted plant": 56,
+            "stop sign": 1,
+            "traffic light": 4,
+            "truck": 4,
+            "umbrella": 2
+        },
+        "0.95": {
+            "[0] time run": "2023-01-29 21:18:15.367795",
+            "[1] weight": "FCOS_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.95,
+            "bench": 11,
+            "car": 11,
+            "fire hydrant": 3,
+            "motorcycle": 1,
+            "parking meter": 1,
+            "person": 6,
+            "potted plant": 56,
+            "stop sign": 1,
+            "traffic light": 4,
+            "truck": 4,
+            "umbrella": 2
+        },
+        "0.99": {
+            "[0] time run": "2023-01-29 21:18:39.751842",
+            "[1] weight": "FCOS_ResNet50_FPN_Weights.COCO_V1",
+            "[2] confidence level": 0.99,
+            "bench": 11,
+            "car": 11,
+            "fire hydrant": 3,
+            "motorcycle": 1,
+            "parking meter": 1,
+            "person": 6,
+            "potted plant": 56,
+            "stop sign": 1,
+            "traffic light": 4,
+            "truck": 4,
+            "umbrella": 2
+        }
+    }
+}
