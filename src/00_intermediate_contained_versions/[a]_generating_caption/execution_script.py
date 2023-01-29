@@ -3,6 +3,7 @@ Purpose
 =======
 Detection and classification of objects within an image.
 
+
 Use the labels to train o Huggingface NLP-model generating a docstring based on selected keywords using a seq2seq
 model (T5/BART).
 
