@@ -19,7 +19,7 @@ capacity CNNs for object detection
 reference: https://journalofbigdata.springeropen.com/articles/10.1186/s40537-021-00434-w 
 
 
-
+    
 - load an image nn and its pre-trained weights
 
 Dataloader
