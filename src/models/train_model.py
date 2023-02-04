@@ -21,6 +21,7 @@ import time
 
 root_path_txt_data = "/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flickr8k_text"
 file_image_description = "Flickr8k.token.txt"
+requirement_file = "/Users/swmoeller/python/prj_image_captioning_e2e/data/20_processed/requirement.txt"
 
 search_string = "#"         # string to be found in text file to identify captions
 
@@ -144,6 +145,31 @@ def unique_vocabulary(in_clean_dict: dict):
     print("[INFO] List of unique words (out of captions) generated.")
     return list_of_words
 
+
+def save_descriptions(in_clean_dict: dict):
+    """
+    This function will create a list of all the descriptions that have been preprocessed and store them into a file.
+    
+    :param in_clean_dict:
+    :type in_clean_dict:
+    :return:
+    :rtype:
+    """
+    outfile = open(requirement_file,"w")
+    # output the header row
+    outfile.write("image\tcaption\n")
+    # output image name and each caption line-by-line
+    for keys, values in clean_dictionary.items():
+        for items in range(len(values)):
+            row_string = "{}\t{}\n".format(keys, values[items])
+            outfile.write(row_string)
+    
+    outfile.close()
+    print("[INFO] requirement.txt generated.")
+
+    return
+
+
 # MODEL definition
 # ================
 frcnn_model = torchvision.models.get_model("resnet50", weights="DEFAULT")
@@ -158,17 +184,9 @@ frcnn_model.fc = torch.nn.Identity()
 print("\n[START] Start of execution {}\n".format(time.strftime("%H:%M:%S")))
 description_dictionary = generate_dict(root_path_txt_data, file_image_description)
 clean_dictionary = clean_dict(description_dictionary)
-
-"""for keys, values in clean_dictionary.items():
-    for items in range(len(values)):
-        print(keys, " : ", values[items])"""
 unique_words = unique_vocabulary(clean_dictionary)
-#print(unique_words)
+save_descriptions((clean_dictionary))
 
-
-
-#  **text\_vocabulary( descriptions ) –** This is a simple function that will separate all the unique words
-# **save\_descriptions( descriptions, filename )
 
 # print("[INFO] Parameter of selected model for image recognition", frcnn_model)
 print("\n[END] End of execution: ", time.strftime("%H:%M:%S"))
