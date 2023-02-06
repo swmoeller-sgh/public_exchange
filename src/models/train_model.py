@@ -20,6 +20,9 @@ import cv2
 
 import pickle
 
+# small library for seeing the progress of loops.
+from tqdm import tqdm_notebook as tqdm
+
 import PIL
 
 import numpy as np
@@ -33,6 +36,7 @@ import torch
 
 # INPUT data
 path_text_data = "/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flickr8k_text"
+path_image_data = "/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flicker8k_Dataset"
 file_image_flickr_description = "Flickr8k.token.txt"
 file_train_img_lst = "Flickr_8k.trainImages.txt"
 
@@ -67,7 +71,7 @@ def load_doc(in_pathname: str, in_filename: str):
     """
     # Opening the file as read only
     full_path = os.path.join(in_pathname, in_filename)
-    print("[INFO] Complete path to file now being opened: ", full_path)
+    print("\n[INFO] Complete path to file now being opened: ", full_path)
 
     if os.path.isfile(path=full_path):
         file = open(file=full_path, mode="r")
@@ -79,6 +83,23 @@ def load_doc(in_pathname: str, in_filename: str):
         exit()
     
     return text
+
+
+def merge_two_dicts(in_dict_one: dict, in_dict_two: dict):
+    """
+    Given two dictionaries, merge them into a new dict as a shallow copy.
+    
+    :param in_dict_one: dictionary one to be merged
+    :type in_dict_one: dict
+    :param in_dict_two: dictionary two to be merged
+    :type in_dict_two: dict
+
+    :return: dictionary (merged)
+    :rtype: dict
+    """
+    merged_dict = in_dict_one.copy()
+    merged_dict.update(in_dict_two)
+    return merged_dict
 
 
 def generate_image_dict(in_path_text_data: str, in_description_filename: str):
@@ -217,6 +238,101 @@ def save_descriptions(in_clean_dict: dict, in_path_output : str, in_filename_out
 
     return
 
+
+def extract_features(in_data_path: str, in_path_processed_data: str, in_file_feature: str):
+    """
+    Read all filenames in image dataset folder, open every image, resize it, convert it into a tensor, put the model
+    into evaluation mode, extract the features from each image on the list and save the features + image into a
+    dictionary.
+
+    :param in_file_feature: file, where the extracted features were saved so far
+    :type in_file_feature: str
+    :param in_path_processed_data: root path for all processed data
+    :type in_path_processed_data: str
+    :param in_data_path: Path to directory containing all image files
+    :type in_data_path:
+    :return:
+    :rtype:
+    """
+    feature_dict = {}
+    image_list = os.listdir(in_data_path)           # generate a list of images
+
+    print("\n[INFO] Starting to work on feature extraction (might take some time!!)...")
+    
+    for n in range(len(image_list)):
+
+        filename = in_data_path + "/" + image_list[n]
+        image = cv2.imread(filename)                # height, width, color
+
+        # 2. transform image (resize, normalize, convert to Tensor, reshape (incl. batch size))
+        height = image.shape[0]
+        width = image.shape[1]
+        if height > width:
+            reduction_ratio = 224 / height
+            # dimension for resize needs to be width, height
+            dim = [int(image.shape[1] * reduction_ratio), int(image.shape[0] * reduction_ratio)]
+        else:
+            reduction_ratio = 224 / width
+            dim = [int(image.shape[1] * reduction_ratio), int(image.shape[0] * reduction_ratio)]
+            
+        img_resized = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+
+        # 3. convert to tensor
+        convert_tensor = transforms.ToTensor()
+        img_pytorch = convert_tensor(img_resized)
+        img_pytorch = img_pytorch.reshape(1, img_pytorch.shape[0], img_pytorch.shape[1], img_pytorch.shape[2])
+
+        # 2a. normalize?: transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+        # 3. turn of gradient (for what do we need gradient normally?)
+
+        # 4. put model to evaluation (with pre-trained weights)
+        frcnn_model.eval()
+        features = frcnn_model(img_pytorch)
+
+        # does not work :-(
+            # new_model.eval()
+            # features = new_model(img_pytorch)
+
+        # 3 map image name with feature matrix, i.e. establish dictionary with image name and feature
+        feature_dict[image_list[n]] = features
+
+        if (n + 1) % 100 == 0:
+            
+            # check, if feature file already exists
+            if os.path.isfile(path=os.path.join(in_path_processed_data, in_file_feature)):
+                # load pickle file with all features in dict saved so far
+                all_features = pickle.load(open(os.path.join(in_path_processed_data, in_file_feature), "rb"))
+            
+                # add new feature dict to all_feature dict
+                feature_dict = merge_two_dicts(in_dict_one= all_features, in_dict_two=feature_dict)
+            
+                # save feature dict to file system
+                pickle.dump(feature_dict, open(os.path.join(in_path_processed_data, in_file_feature), "wb"))
+            else:
+                # save feature dict to file system
+                pickle.dump(feature_dict, open(os.path.join(in_path_processed_data, in_file_feature), "wb"))
+            
+            # reset feature dict to 0
+            feature_dict = {}
+            
+            print(f"[Processing...] First {n+1} images done! Let's go for the remaining {len(image_list)-n} images!")
+
+
+    # 4 save everything into file *dump as pickle
+
+    # load pickle file with all features in dict saved so far
+    all_features = pickle.load(open(os.path.join(in_path_processed_data, in_file_feature), "rb"))
+
+    # add new feature dict to all_feature dict
+    feature_dict = merge_two_dicts(in_dict_one=all_features, in_dict_two=feature_dict)
+
+    # save feature dict to file system
+    pickle.dump(feature_dict, open(os.path.join(in_path_processed_data, in_file_feature), "wb"))
+
+    print(f"\n[INFO] Finally done! AND ... I saved my doing in {in_file_feature} for you!")
+    
+    return
+    
 """
 def setup_extraction_model(in_image):
     
@@ -226,7 +342,7 @@ def read_image_list(in_root_path_txt_data: str, in_train_img_lst: str):
     image_lst = []
     
     list_images = os.path.join(in_root_path_txt_data, in_train_img_lst)
-    print("[INFO] Processing text input file: ", in_train_img_lst)
+    print("\n[INFO] Processing text input file: ", in_train_img_lst)
     if os.path.isfile(path=list_images):
         image_list_file = open(file=list_images, mode="r")
         image_lst = image_list_file.read()
@@ -277,7 +393,7 @@ def generate_clean_descriptions(in_path_data_text: str, in_file_image_descriptio
                 # add a new dictionary entry with the image name as key and the caption + start/end as value
                 descriptions[image].append(desc)
     
-    print(f"[INFO] Dictionary with cleaned captions and tokens start and end generated.\n")
+    print(f"\n[INFO] Dictionary with cleaned captions and tokens start and end generated.\n")
     
     return descriptions
 
@@ -286,6 +402,7 @@ def load_features(in_path_processed_data: str, in_file_saved_features: str, in_i
 
     # loading all features
     all_features = pickle.load(open(os.path.join(in_path_processed_data,in_file_saved_features), "rb"))
+
     # selecting only needed features
     features_list = {k: all_features[k] for k in in_images_to_train}
     
@@ -346,77 +463,29 @@ save_descriptions(in_clean_dict=clean_dictionary,
                   in_path_output=path_processed_data,
                   in_filename_output= file_image_description)
 
-
-"""
-https://www.projectpro.io/recipes/use-resnet-for-image-classification-pytorch
-https://towardsdatascience.com/image-feature-extraction-using-pytorch-e3b327c3607a
-"""
-
-# 1. Load the image
-
-img = cv2.imread(r"/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flicker8k_Dataset"
-                     r"/3423802527_94bd2b23b0.jpg") # height, width, color
-print(f"\n[INFO] Current image parameter: Type of image is {type(img)} and its shape (height, width, color) is"
-      f" {img.shape}.\nNow transforming...!")
-
-# 2. transform image (resize, normalize, convert to Tensor, reshape (incl. batch size))
-height = img.shape[0]
-width = img.shape[1]
-if height > width:
-    reduction_ratio = 224/height
-    # dimension for resize needs to be width, height
-    dim=[int(img.shape[1]*reduction_ratio), int(img.shape[0]*reduction_ratio)]
-    print(dim)
+# extract features from images
+# a) check, if feature file exists and how many keys were saved
+# b) if file exists, ask user about action (redo or skip)
+print("\n[INFO] Checking feature extraction status: Do we need to generate a dictionary or does one exist?")
+feature_path = os.path.join(path_processed_data, file_image_features)
+if os.path.isfile(path=feature_path):
+    feature_dict = pickle.load(open(os.path.join(path_processed_data, file_image_features), "rb"))
+    print(f"[ATTENTION] I just discovered, that I already generated once a feature file with significant efforts!\n"
+          f"We talk here about {len(feature_dict)} entries!!!\n"
+          f"You have now the one chance, to skip the generation of a new feature dict!")
+    user_decision = input("Do you want to skip the generation of a new feature dictionary (y/n): ")
+    if user_decision == "n":
+        extract_features(in_data_path=path_image_data,
+                         in_path_processed_data=path_processed_data,
+                         in_file_feature=file_image_features)
+    else:
+        print("[INFO] You made the wise decision to save me and you time by not generating a new feature dictionary.")
 else:
-    reduction_ratio = 224/width
-    dim = [int(img.shape[1]*reduction_ratio), int(img.shape[0]*reduction_ratio)]
-    print(dim)
-img_resized = cv2.resize(img, dim,interpolation = cv2.INTER_AREA)
-convert_tensor = transforms.ToTensor()
-img_pytorch = convert_tensor(img_resized)
-img_pytorch = img_pytorch.reshape(1, img_pytorch.shape[0],img_pytorch.shape[1],img_pytorch.shape[2])
-print(f"\n[INFO] New image parameter: Type of image is {type(img_pytorch)} and its shape (batch, color, height, "
-      f"width) is {img_pytorch.shape}.")
-
-# 2a. normalize?: transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-# 3. turn of gradient (for what do we need gradient normally?)
-
-# 4. put model to evaluation (with pre-trained weights)
-frcnn_model.eval()
-features = frcnn_model(img_pytorch)
-
-# does not work :-(
-#new_model.eval()
-#features = new_model(img_pytorch)
-
-# print("[INFO] Parameter of selected model for image recognition", frcnn_model)
-print(features)
-
-
-# 3 map image name with feature matrix, i.e. establish dictionary with image name and feature
-feature_dict = {}
-
-feature_dict["17273391_55cfc7d3d4.jpg"] = features
-print(feature_dict)
-
-
-# 4 save everything into file *dump as pickle
-
-pickle.dump(features, open(os.path.join(path_processed_data, file_image_features),"wb"))
-
-
+    extract_features(in_data_path=path_image_data,
+                     in_path_processed_data=path_processed_data,
+                     in_file_feature=file_image_features)
 
 # Loading dataset for Training the model
-# In the Flickr\_8k\_test folder, we have Flickr\_8k.trainImages.txt file that contains a list of 6000 image
-# names that we will use for training.
-
-# For loading the training dataset, we need more functions:
-# - load\_photos( filename ) – This will load the text file in a string and will return the list of image names.
-# - load\_clean\_descriptions( filename, photos ) – This function will create a dictionary that contains captions
-# for each photo from the list of photos. We also append the "start" and "end" identifier for each caption. We need this so that our LSTM model can identify the starting and ending of the caption.
-# - load\_features(photos) This function will give us the dictionary for image names and their feature vector
-# which we have previously extracted.
-
 # read names of images into a list
 train_images = read_image_list(in_root_path_txt_data=path_text_data, in_train_img_lst=file_train_img_lst)
 
@@ -424,9 +493,10 @@ train_images = read_image_list(in_root_path_txt_data=path_text_data, in_train_im
 train_descriptions = generate_clean_descriptions(in_path_data_text=path_processed_data,
                                                  in_file_image_description=file_image_description,
                                                  in_image_list=train_images)
+
 # load features for selected training files
-train_features = load_features(in_path_processed_data= path_processed_data,
-                               in_file_saved_features= file_image_features,
+train_features = load_features(in_path_processed_data=path_processed_data,
+                               in_file_saved_features=file_image_features,
                                in_images_to_train=train_images)
 
 print("\n[END] End of execution: ", time.strftime("%H:%M:%S"))
@@ -500,8 +570,3 @@ with torch.no_grad():
 # Convert to NumPy Array
 features = np.array(features)
 """
-
-# 1 define extractor class
-# 2 Define extractor function
-# 3 map image name with feature matrix
-# 4 save everything into file *dump as pcikle
