@@ -3,6 +3,28 @@ Objective
 ==============
 Generate the caption for an image using two NN (CNN and NLP).
 https://data-flair.training/blogs/python-based-project-image-caption-generator-cnn/
+
+1. Load the image and extract its features: Use a pre-trained deep learning model such as VGG or ResNet to extract the
+features from the image and store the features in a variable.
+
+2. Preprocess the captions: Tokenize the captions and convert them into numerical representations using a word
+embedding.
+
+3. Prepare the data: Split the data into training and testing sets, and create data loaders to feed the data into the
+model during training and evaluation.
+
+4. Define the LSTM model: Define the LSTM model architecture with PyTorch. The input to the LSTM should be the image
+features and the output should be the predicted caption.
+
+5. Train the model: Train the LSTM model using the training data and the PyTorch built-in loss functions and optimizers.
+
+6. Evaluate the model: Evaluate the performance of the model on the testing data. You can use metrics such as BLEU or
+ROUGE to evaluate the quality of the generated captions.
+
+7. Generate captions: Use the trained LSTM model to generate captions for new images.
+
+
+
 """
 
 
@@ -10,6 +32,7 @@ https://data-flair.training/blogs/python-based-project-image-caption-generator-c
 # ===============
 import torchvision.models
 from torchvision import transforms
+import transformers
 
 import torch.nn
 
@@ -20,47 +43,87 @@ import cv2
 
 import pickle
 
-# small library for seeing the progress of loops.
-from tqdm import tqdm_notebook as tqdm
-
-import PIL
-
 import numpy as np
 
 import torch
-
-# model = models.vgg16(pretrained=True)
 
 # Variable definition
 # ===================
 
 # INPUT data
+# ----------
 path_text_data = "/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flickr8k_text"
 path_image_data = "/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flicker8k_Dataset"
 file_image_flickr_description = "Flickr8k.token.txt"
 file_train_img_lst = "Flickr_8k.trainImages.txt"
 
 
-search_string = "#"         # string to be found in text file to identify captions
-
 # TRAINING directory
+# ------------------
 path_train_dir = "/Users/swmoeller/python/prj_image_captioning_e2e/data/05_raw/Flicker8k_Dataset"
 
+
 # OUTPUT data
+# -----------
 path_processed_data = "/Users/swmoeller/python/prj_image_captioning_e2e/data/20_processed/"
 file_image_description = "description.txt"
 file_image_features = "feature.p"
+file_vocabulary = "vocabulary.txt"
+path_tokenizer = 'modified_tokenizer'
+
+
+# IMAGE related
+# --------------
+
+search_string = "#"         # string to be found in text file to identify captions
+
+
+# TEXT related
+# ------------
+
+special_tokens = []         # special tokens to be added to the Tokenizer (in this case HuggingFaces)
+
 
 # CLASS definition
 # ================
 
+class ResNet50Features(torch.nn.Module):
+    def __init__(self):
+        super(ResNet50Features, self).__init__()
+        resnet50_weights = torchvision.models.ResNet50_Weights.DEFAULT
+        self.resnet50 = torchvision.models.resnet50(weights=resnet50_weights)
+        # Freeze all layers to prevent backpropagation
+        for param in self.resnet50.parameters():
+            param.requiresGrad = False
+        # Replace the fully connected layer with an identity function
+        self.resnet50.fc = torch.nn.Identity()
 
-# FUNCTION definition
-# ===================
+    def forward(self, x):
+        self.eval()
+        with torch.no_grad():
+            x = self.resnet50(x)
+        return x
+
+
+# MODEL definition
+# ================
+
+frcnn_model = ResNet50Features      # initializing the feature extractor based on CNN
+
+# the tokinzer is being initialized later (pre-trained or with a custom vocabulary)
+
+
+# region FUNCTION definition
+# ==========================
 
 def load_doc(in_pathname: str, in_filename: str):
     """
-    Loads a textfile from the directory structure into the memory
+    The function load_doc takes in two arguments in_pathname and in_filename, both of which are strings. The
+    in_pathname is the fully qualified path of the directory where the file is located, while in_filename is the
+    name of the file in that directory.
+    The function opens the file located at in_pathname/in_filename and reads its contents into memory as a string.
+    The contents of the file are then returned by the function. If the file does not exist, the function will print
+    an error message and exit the program.
 
     :param in_pathname: fully qualified path
     :type in_pathname: str
@@ -73,15 +136,13 @@ def load_doc(in_pathname: str, in_filename: str):
     full_path = os.path.join(in_pathname, in_filename)
     print("\n[INFO] Complete path to file now being opened: ", full_path)
 
-    if os.path.isfile(path=full_path):
-        file = open(file=full_path, mode="r")
-        text = file.read()
-        file.close()
+    if not os.path.isfile(path=full_path):
         print(f"[INFO] File {in_filename} successfully opened in {in_pathname}\n")
-    else:
-        print(f"\n{in_pathname} or {in_filename} does not exist!\nThat sucks, I quit my service!")
         exit()
-    
+
+    with open(full_path, "r") as file:
+        text = file.read()
+
     return text
 
 
@@ -223,10 +284,12 @@ def save_descriptions(in_clean_dict: dict, in_path_output : str, in_filename_out
     :return:
     :rtype:
     """
+    
+#    file_description = load_doc(in_pathname=in_path_output, in_filename_output= in_filename_output)
     full_path = os.path.join(in_path_output, in_filename_output)
     outfile = open(full_path, "w")
     # output the header row
-    outfile.write("image\tcaption\n")
+#    outfile.write("image\tcaption\n")
     # output image name and each caption line-by-line
     for keys, values in in_clean_dict.items():
         for items in range(len(values)):
@@ -241,9 +304,13 @@ def save_descriptions(in_clean_dict: dict, in_path_output : str, in_filename_out
 
 def extract_features(in_data_path: str, in_path_processed_data: str, in_file_feature: str):
     """
-    Read all filenames in image dataset folder, open every image, resize it, convert it into a tensor, put the model
-    into evaluation mode, extract the features from each image on the list and save the features + image into a
-    dictionary.
+    This code is for extracting features from a set of images. The images are read from the directory specified by
+    in_data_path. The code uses a pre-trained ResNet50 model from PyTorch to extract features from each image. The images
+    are first resized to have a height or width of 224 pixels, then converted to a tensor format, and then passed
+    through the ResNet50 model to obtain features. The features and the corresponding image file names are stored in
+    a dictionary and saved in a pickle file specified by in_file_feature. The code saves the features in the pickle
+    file after processing every 100 images, and merges the current feature dictionary with the previously saved
+    dictionary. At the end, the final feature dictionary is saved in the same pickle file.
 
     :param in_file_feature: file, where the extracted features were saved so far
     :type in_file_feature: str
@@ -256,6 +323,7 @@ def extract_features(in_data_path: str, in_path_processed_data: str, in_file_fea
     """
     feature_dict = {}
     image_list = os.listdir(in_data_path)           # generate a list of images
+    resnet50_features = ResNet50Features()
 
     print("\n[INFO] Starting to work on feature extraction (might take some time!!)...")
     
@@ -283,16 +351,9 @@ def extract_features(in_data_path: str, in_path_processed_data: str, in_file_fea
         img_pytorch = img_pytorch.reshape(1, img_pytorch.shape[0], img_pytorch.shape[1], img_pytorch.shape[2])
 
         # 2a. normalize?: transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        # 3. turn of gradient (for what do we need gradient normally?)
 
-        # 4. put model to evaluation (with pre-trained weights)
-        frcnn_model.eval()
-        features = frcnn_model(img_pytorch)
-
-        # does not work :-(
-            # new_model.eval()
-            # features = new_model(img_pytorch)
-
+        features = resnet50_features(img_pytorch)
+        
         # 3 map image name with feature matrix, i.e. establish dictionary with image name and feature
         feature_dict[image_list[n]] = features
 
@@ -333,10 +394,6 @@ def extract_features(in_data_path: str, in_path_processed_data: str, in_file_fea
     
     return
     
-"""
-def setup_extraction_model(in_image):
-    
-    return"""
 
 def read_image_list(in_root_path_txt_data: str, in_train_img_lst: str):
     image_lst = []
@@ -356,7 +413,7 @@ def read_image_list(in_root_path_txt_data: str, in_train_img_lst: str):
     return image_lst
 
 
-def generate_clean_descriptions(in_path_data_text: str, in_file_image_description: str, in_image_list):
+def generate_dic_with_tokens(in_path_data_text: str, in_file_image_description: str, in_image_list):
     """
     This function will create a dictionary that contains captions for each photo from the list of photos. We also append
     the "start" and "end" identifier for each caption. We need this so that our LSTM model can identify the starting and
@@ -385,16 +442,25 @@ def generate_clean_descriptions(in_path_data_text: str, in_file_image_descriptio
         # check, if image name exists in the list of images provided by flickr in the raw data
         if image in in_image_list:
             
-            # if the image name does not exists in the descriptions dictionary
             if image not in descriptions:
+                # if the image name does not exist in the descriptions dictionary
                 descriptions[image] = []            # generate an empty list
-                desc = '<start> ' + " ".join(image_caption) + ' <end>'  # generate a string consisting of the image
-                # caption and start + end
+                # KERAS: generate a string consisting of the image caption and start + end
+#                desc = '<start> ' + " ".join(image_caption) + ' <end>'
+                # HuggingFaces: generate a string consisting of the image caption and start + end
+                desc = '<CLS> ' + " ".join(image_caption) + ' <SEP>'
+
                 # add a new dictionary entry with the image name as key and the caption + start/end as value
+                descriptions[image].append(desc)
+            else:
+                # generate a string consisting of the image caption and start + end
+                # desc = '<start> ' + " ".join(image_caption) + ' <end>'
+                # HuggingFaces: generate a string consisting of the image caption and start + end
+                desc = '<CLS> ' + " ".join(image_caption) + ' <SEP>'
+
                 descriptions[image].append(desc)
     
     print(f"\n[INFO] Dictionary with cleaned captions and tokens start and end generated.\n")
-    
     return descriptions
 
 
@@ -407,47 +473,94 @@ def load_features(in_path_processed_data: str, in_file_saved_features: str, in_i
     features_list = {k: all_features[k] for k in in_images_to_train}
     
     return features_list
+
     
-
-# MODEL definition
-# ================
-
-#OPTION 1
-frcnn_model = torchvision.models.get_model("resnet50", weights="DEFAULT")
-
-#  replace fc with Identity, which just returns the input as the output, and since the features are its input,
-#  the output of the entire model will be the features.
-frcnn_model.fc = torch.nn.Identity()
-# print("option 1", frcnn_model)
-
-
-# Option 2
-
-class FeatureExtractor(torch.nn.Module):
-    def __init__(self, model):
-        super(FeatureExtractor, self).__init__()
-        
-        self.model = model
-#        print("\n[INFO] Original CNN-model\n", self.model)
-        
-        # replace feature layer
-        self.model.fc = torch.nn.Identity()
-
-        # Convert the image into one-dimensional vector
-        self.model.flatten = torch.nn.Flatten()
-        
-#        print("\n\n[UPDATE] Modified CNN-model\n", self.model)
+def dict_to_list(descriptions: dict):
+    """
+    The function dict_to_list takes a dictionary descriptions as input and returns a list of all the values of the
+    dictionary.
     
-    def forward(self, x):
-        # It will take the input 'x' until it returns the feature vector called 'out'
-        out = self.model(x)
-        out = self.fc(out)
-        out = self.flatten(out)
-        return out
+    1. The function initializes an empty list all_desc to store the values. Then, it loops through the keys of the
+    input dictionary descriptions using the keys method.
+    
+    2. For each key in the dictionary, the function uses a list comprehension to extract the values associated with
+    that key and appends each of these values to the all_desc list.
+    
+    3. Finally, the function returns the resulting list all_desc which contains all the values from the input
+    dictionary.
+    
+    :param descriptions: Dictionary with lists as values for each key.
+    :type descriptions: dict
+    :return: list of all descriptions withput reference to imqge
+    :rtype: list
+    """
+    
+    all_desc = []
+    for key in descriptions.keys():
+        [all_desc.append(d) for d in descriptions[key]]
+    return all_desc
 
-# Initialize the model
-model = torchvision.models.get_model("resnet50", weights="DEFAULT")
-new_model = FeatureExtractor(model)
+
+def print_dict_with_list(in_dictionary: dict):
+    """
+    The code is a Python function that takes a dictionary d as input and prints its contents. The dictionary is
+    assumed to contain lists as values.
+
+    1. The function first loops through the items in the dictionary using the items method. For each key-value pair,
+    it prints the key and a colon followed by a newline.
+
+    2. Next, it uses another loop to iterate over the items in the list associated with the key. The inner loop prints
+    each item in the list on a separate line.
+
+    The function does not return any output, it only prints the contents of the dictionary.
+    
+    :param in_dictionary: dictionary containing lists as values
+    :type in_dictionary: dict
+    """
+    for key, value in in_dictionary.items():
+        print(key, ":")
+        for item in value:
+            print(item)
+
+
+def generate_list_with_unique_words(in_path_input_path : str, in_description_file_input : str):
+    """
+    Read a cleaned text file with image name in the first column and followed by possible captions.
+    Generate a list out of the input containing the words used in the captions
+    1. load the file from harddrive
+    2. iterate through the file and read eachtime all words starting from index 1 (excluding the image name)
+    3. append to a list checking, if a word already exists in the dictionary
+    4. Add the specific tokens <start>, <end>,
+    :param in_description_file_input: ext file containing image name and caption
+    :type in_description_file_input: str
+    :param in_path_input_path: path to input file containing descriptions
+    :type in_path_input_path: str
+    
+    :return:
+    :rtype:
+    """
+    list_of_words = []
+
+    file_description = load_doc(in_pathname=in_path_input_path, in_filename=in_description_file_input)
+#    print(file_description)
+
+    for line in file_description.split("\n"):  # split text file line by line
+    
+        # split the line into single words
+        words = line.split()
+    
+        if len(words) < 1:
+            continue
+        # assign the first word as image name and all other words as image caption
+        image, image_caption = words[0], words[1:]
+    
+        for word in image_caption:
+            if word not in list_of_words:
+                list_of_words.append(word)
+        
+    return list_of_words
+# endregion
+
 
 
 # ===================
@@ -468,12 +581,13 @@ save_descriptions(in_clean_dict=clean_dictionary,
 # b) if file exists, ask user about action (redo or skip)
 print("\n[INFO] Checking feature extraction status: Do we need to generate a dictionary or does one exist?")
 feature_path = os.path.join(path_processed_data, file_image_features)
+
 if os.path.isfile(path=feature_path):
     feature_dict = pickle.load(open(os.path.join(path_processed_data, file_image_features), "rb"))
     print(f"[ATTENTION] I just discovered, that I already generated once a feature file with significant efforts!\n"
           f"We talk here about {len(feature_dict)} entries!!!\n"
           f"You have now the one chance, to skip the generation of a new feature dict!")
-    user_decision = input("Do you want to skip the generation of a new feature dictionary (y/n): ")
+    user_decision = input("Do you want to skip the generation of a new feature dictionary (y/n): ").lower()
     if user_decision == "n":
         extract_features(in_data_path=path_image_data,
                          in_path_processed_data=path_processed_data,
@@ -489,15 +603,101 @@ else:
 # read names of images into a list
 train_images = read_image_list(in_root_path_txt_data=path_text_data, in_train_img_lst=file_train_img_lst)
 
-# generate dictionary of image (key) and caption (value) preceded by "start" and trailed by "end"
-train_descriptions = generate_clean_descriptions(in_path_data_text=path_processed_data,
-                                                 in_file_image_description=file_image_description,
-                                                 in_image_list=train_images)
+# generate dictionary including only the images image (key) and caption (value) preceded by "start" and trailed by
+# "end" we want to train (i.e. which are in the training list)
+dict_train_descriptions = generate_dic_with_tokens(in_path_data_text=path_processed_data,
+                                                   in_file_image_description=file_image_description,
+                                                   in_image_list=train_images)
 
 # load features for selected training files
 train_features = load_features(in_path_processed_data=path_processed_data,
                                in_file_saved_features=file_image_features,
                                in_images_to_train=train_images)
+
+
+# 5. Tokenizing the vocabulary
+"""
+Computers don’t understand English words, for computers, we will have to represent them with numbers. So,
+we will map each word of the vocabulary with a unique index value. Keras library provides us with the tokenizer
+function that we will use to create tokens from our vocabulary and save them to a **“tokenizer.p”** pickle file.
+
+An LSTM tokenizer is a type of deep learning model that uses Long Short-Term Memory (LSTM) units to tokenize text.
+Here is an outline of how you can create an LSTM tokenizer in Python:
+
+1. Preprocess the text data: The first step is to preprocess the text data. This includes converting the text to
+lowercase, removing punctuation, and splitting the text into sentences and tokens. You can use regular expressions
+and other text preprocessing tools to achieve this.
+
+2. Create a vocabulary: Create a vocabulary of the words in the text data. This vocabulary can be used to encode the
+text data into numerical representations, which can be fed into the LSTM model. You can use a word embedding to map
+words to vectors and use a one-hot encoding to map words to numbers.
+
+3. Define the LSTM model architecture: Define the architecture of the LSTM model. This involves specifying the number
+of LSTM units, the number of layers, the activation function, and the input and output shapes.
+
+4. Train the LSTM model: Train the LSTM model on the preprocessed text data. You can use a categorical cross-entropy
+loss function and an optimizer such as Adam to train the model. You should also set aside a portion of the data for
+validation to monitor the model's performance during training.
+
+5. Tokenize the text data: Once the model is trained, you can use it to tokenize new text data. You can feed the
+text data into the trained LSTM model and use the output to generate the tokenized text.
+
+6. Save and load the model: Finally, save the trained LSTM model so that you can use it later without having to
+train it again. You can use the Keras or TensorFlow libraries in Python to save and load the model.
+"""
+
+# Text you want to tokenize
+text_to_be_tokenized = dict_to_list(descriptions=dict_train_descriptions)
+
+# generate list of words contained in captions
+word_list = generate_list_with_unique_words(in_path_input_path=path_processed_data,
+                                            in_description_file_input=file_image_description)
+
+# save list of words to file
+full_voc_path = os.path.join(path_processed_data, file_vocabulary)
+
+with open(full_voc_path, 'w') as file:
+    for word in word_list:
+        file.write(f'{word}\n')
+
+
+# Initialize and train the tokenizer with the given sentences, i.e. assign each word a unique integer
+
+tokenizer = transformers.BertTokenizer(vocab_file=full_voc_path)
+#tokenizer = transformers.BertTokenizer.from_pretrained('bert-base-uncased')
+tokenizer.add_tokens(special_tokens)
+
+print(tokenizer.vocab)
+print(tokenizer.vocab_size)
+
+# Tokenize the text
+tokenized_sentences = [tokenizer.tokenize(sentence) for sentence in text_to_be_tokenized]
+
+if any(val is None for val in tokenized_sentences):
+    print("There is a None value in the tokenized sentences.")
+    
+# Convert the tokenized text to an encoding that the model can use
+try:
+    encoded_sentences = [tokenizer.encode(sentence) for sentence in tokenized_sentences]
+except KeyError as e:
+    print(f"Encountered an error while encoding: {e}")
+
+# Print the tokenized and encoded text
+#print("Tokenized Text:", tokenized_sentences)
+#print("Encoded Text:", encoded_sentences)
+
+
+tokenizer.save_pretrained(os.path.join(path_processed_data,path_tokenizer))
+# tokenizer = BertTokenizer.from_pretrained('./modified_tokenizer')
+
+# pickle.dump(tokenizer, open('tokenizer.p', 'wb'))
+"""vocab_size = len(tokenizer.vocab) + 1
+print(tokenizer.vocab_size)
+print(tokenizer.vocab)
+print(vocab_size)
+"""
+
+
 
 print("\n[END] End of execution: ", time.strftime("%H:%M:%S"))
 
